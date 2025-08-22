@@ -65,7 +65,6 @@ fi
 
 # cache command availability at startup to avoid repeated command -v calls
 HAS_ZOXIDE=$(command -v zoxide &>/dev/null && echo 1 || echo 0)
-HAS_SQLITE3=$(command -v sqlite3 &>/dev/null && echo 1 || echo 0)
 HAS_NVIM=$(command -v nvim &>/dev/null && echo 1 || echo 0)
 
 # ------------------------
@@ -114,32 +113,25 @@ _zff_selector() {
 
 }
 
-
 get_oldfiles() {
-  local snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
-  if [[ $HAS_SQLITE3 -eq 1 ]] && [[ -f "$snacks_db" ]]; then
-    sqlite3 "$snacks_db" "SELECT key,value FROM data ORDER BY value DESC;" | \
-    awk -v icon="$oldfilesIcon" 'BEGIN{FS="|"} {printf "%s %s\n", icon, $1}'
-  else
-    # fallback to neovim oldfiles
-    if [[ $HAS_NVIM -eq 1 ]]; then
+  snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
+  if [[ $HAS_NVIM -eq 1 ]]; then
+  # using both snacks and nvim oldfiles
+  (
+  sqlite3 "$snacks_db" "SELECT key FROM data ORDER BY value DESC;" 2>/dev/null
 
-    # fastest way to get nvim oldfiles using --headless
-    nvim -n -u NONE --noplugin --headless \
-      -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
-      -c "qa"
-      sed 's/^[ 0-9:]*//' | \
-      awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
-      return 0
-    else
-      # Fallback to vim oldfiles
-      sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null | \
-      awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
-    fi
+  # fastest way to get nvim oldfiles using --headless
+  nvim -n -u NONE --noplugin --headless \
+    -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
+    -c "qa" 2>&1 | tr -d '\r'
+  ) | awk '!seen[$0]++' | sed "s/^/$oldfilesIcon /"
+  else
+    # Fallback to vim oldfiles
+    sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null | \
+    awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
   fi
 
 }
-
 
 get_zoxide_files() {
   local zoxide_dirs
@@ -161,7 +153,6 @@ get_zoxide_files() {
     sed "s/^/$zoxideIcon /"
 }
 
-
 # main function (opener)
 zff() {
   local target_file
@@ -171,7 +162,6 @@ zff() {
   fi
 
 }
-
 
 # --- setup for the INSERTER ---
 # ZSH
