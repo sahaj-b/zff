@@ -8,7 +8,7 @@
 -----
 
 ## Features
-- **Smart Prioritization:** (n)vim oldfiles(with snacks.picker frecency support) > files inside zoxide directories > Current working dir
+- **Smart Prioritization:** (n)vim oldfiles(with snacks.picker frecency support) > CWD > zoxide dirs
 - **Speed:** Uses `fd` with `fzf` for insane speed
 - **Preview support:** Preview code with `bat`, and get thumbnails for images and videos.
 - **Inserter function:** use `zffi` to insert the path(s) into your current command

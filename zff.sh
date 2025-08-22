@@ -63,6 +63,11 @@ if [[ -f "$configPath" ]]; then
   source "$configPath"
 fi
 
+# cache command availability at startup to avoid repeated command -v calls
+HAS_ZOXIDE=$(command -v zoxide &>/dev/null && echo 1 || echo 0)
+HAS_SQLITE3=$(command -v sqlite3 &>/dev/null && echo 1 || echo 0)
+HAS_NVIM=$(command -v nvim &>/dev/null && echo 1 || echo 0)
+
 # ------------------------
 
 
@@ -92,7 +97,7 @@ _zff_selector() {
     fd -t f -H -d "$cwdDepth" "${fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
 
     # Priority 2: Zoxide dirs
-    if command -v zoxide &>/dev/null; then
+    if [[ $HAS_ZOXIDE -eq 1 ]]; then
       get_zoxide_files
     fi
 
@@ -102,6 +107,7 @@ _zff_selector() {
        --scheme=path --tiebreak=index \
        --cycle --preview-window 'right:40%' \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
+       --bind="ctrl-d:half-page-up" --bind="ctrl-u:half-page-down" \
        --query "'" --multi --preview "$previewCmd" |
      sed 's/^[^ ]* //' | # remove prefix
      sed "s|^~|$HOME|" # expand tilde
@@ -111,13 +117,17 @@ _zff_selector() {
 
 get_oldfiles() {
   local snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
-  if command -v sqlite3 &>/dev/null && [[ -f "$snacks_db" ]]; then
+  if [[ $HAS_SQLITE3 -eq 1 ]] && [[ -f "$snacks_db" ]]; then
     sqlite3 "$snacks_db" "SELECT key,value FROM data ORDER BY value DESC;" | \
     awk -v icon="$oldfilesIcon" 'BEGIN{FS="|"} {printf "%s %s\n", icon, $1}'
   else
     # fallback to neovim oldfiles
-    if command -v nvim >/dev/null 2>&1; then
-      nvim --headless -c 'redir! >/dev/stdout | silent oldfiles | quit!' | \
+    if [[ $HAS_NVIM -eq 1 ]]; then
+
+    # fastest way to get nvim oldfiles using --headless
+    nvim -n -u NONE --noplugin --headless \
+      -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
+      -c "qa"
       sed 's/^[ 0-9:]*//' | \
       awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
       return 0
