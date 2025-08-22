@@ -1,4 +1,4 @@
-# `zff` - The Ultimate File Finder 🚀
+# `zff` Snart file finder and inserter
 
 `zff` is a bash script that lets you quickly find and open files using fzf, prioritizing vim oldfiles, zoxide directories, and then your current working directory.
 
@@ -50,17 +50,17 @@ The selected file will open in your `$EDITOR` (`nvim` by default) or `xdg-open` 
 ### To Insert a File Path
 
 The script provides a function called `zffi`.
-  * **Bash:** A keybind is set up for you by default. Just hit **`Ctrl+T`**.
-  * **Zsh:** You need to bind the `zffi` widget yourself. Add this to your `.zshrc`.
+  * **Bash:** A keybind is set up for you by default. Just hit **`Ctrl+T`**. Change keybind in Config if you want
+  * **Zsh:** You need to bind the `zffi` widget yourself. Add this to your `.zshrc` to map it to `Ctrl+T`:
      ```zsh
      zle -N zffi
      bindkey '^T' zffi # Ctrl + T
      ```
 
 ### Custom Zsh Widget Example
+For more advanced integration, you can create a custom widget.
 
-For more advanced integration, you can create a custom widget that opens files when the prompt is empty and inserts paths when typing, using a single keybind. Add this to your `.zshrc`:
-
+This one opens files (`zff`) when the prompt is empty and inserts paths(`zffi`) when typing when you press `Ctrl + o`:
 ```zsh
 zff-widget() {
   if [[ -n "$BUFFER" ]]; then
@@ -76,21 +76,10 @@ zle -N zff-widget
 bindkey '^o' zff-widget # Ctrl + o
 ```
 
-### Another Example: Using Different Keybinding
-
-If you prefer a different key, say `Ctrl+F`, you can bind it like this:
-
-```zsh
-zle -N zffi
-bindkey '^F' zffi
-```
-
 -----
 
 ## Configuration
 
-Don't edit the main script.
+Create a file at `XDG_CONFIG_HOME/zff/config.sh` (`~/.config/zff/config.sh`) to customize your `zff` experience.
 
-Instead, create a file at `~/.config/zff/config.sh` and override the variables you want.
-
-See [example_config.sh](example_config.sh) 
+See [example_config.sh](example_config.sh) for all available options with defaults

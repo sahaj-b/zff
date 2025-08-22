@@ -2,12 +2,11 @@
 
 # -------- CONFIG --------
 # EDIT YOUR CONFIG IN ~/.config/zff/config.sh. these are just defaults
-# 1 byte chars ONLY
 oldfilesIcon=''
 zoxideIcon='󱐌'
 cwdIcon='󰚡'
 zoxideDepth=6 # how deep to search in zoxide dirs
-zoxideThreshold=0.5 # minimum score to consider a zoxide dir
+zoxideThreshold=0.4 # minimum score to consider a zoxide dir
 cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
@@ -101,10 +100,10 @@ _zff_selector() {
      sed -E "s|^(.[^ ]* )$HOME|\1~|" |
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
-       --cycle --ansi --preview-window 'right:40%' \
+       --cycle --preview-window 'right:40%' \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
        --query "'" --multi --preview "$previewCmd" |
-     sed 's/^..//' | # remove prefix
+     sed 's/^[^ ]* //' | # remove prefix
      sed "s|^~|$HOME|" # expand tilde
 
 }
