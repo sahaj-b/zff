@@ -20,6 +20,7 @@
   - `fzf`
   - `zoxide` (optional)
   - `fd`
+  - `rg`
   - `bat` (optional): For syntax-highlighted code previews.
   - `ffmpegthumbnailer` (optional): For video thumbnails in the preview pane.
   - `chafa` or `img2sixel` (optional): For image previews in the terminal.(`chafa` is recommended as it supports more formats)
