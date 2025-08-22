@@ -10,43 +10,38 @@ zoxideThreshold=0.4 # minimum score to consider a zoxide dir
 cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
+useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
 
 # ignore patterns
 fd_ignores=(
-  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store'
-  '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**'
-  '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**'
-  "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**"
-  
+  # VCS, project folders, misc
+  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**"
+
   # Build artifacts and temp files
-  '**/CMakeCache.txt' '**/CMakeFiles/**' '**/Makefile' '**/*.o' '**/*.obj' '**/*.a' '**/*.so' '**/*.dll' '**/*.dylib'
-  '**/*.exe' '**/*.class' '**/*.jar' '**/*.war' '**/*.pyc' '**/*.pyo' '**/*.pyd' '**/__pycache__/**' '**/*.whl'
-  '**/coverage/**' '**/.coverage' '**/.nyc_output/**' '**/htmlcov/**' '**/coverage.xml'
-  
+  '**/CMakeCache.txt' '**/CMakeFiles/**' '**/Makefile' '**/*.o' '**/*.obj' '**/*.a' '**/*.so' '**/*.dll' '**/*.dylib' '**/*.exe' '**/*.class' '**/*.jar' '**/*.war' '**/*.pyc' '**/*.pyo' '**/*.pyd' '**/__pycache__/**' '**/*.whl' '**/coverage/**' '**/.coverage' '**/.nyc_output/**' '**/htmlcov/**' '**/coverage.xml'
+
   # Lock files and package managers
-  '**/package-lock.json' '**/yarn.lock' '**/pnpm-lock.yaml' '**/Pipfile.lock' '**/poetry.lock' '**/Cargo.lock'
-  '**/composer.lock' '**/Gemfile.lock' '**/go.sum' '**/mix.lock'
-  
+  '**/package-lock.json' '**/yarn.lock' '**/pnpm-lock.yaml' '**/Pipfile.lock' '**/poetry.lock' '**/Cargo.lock' '**/composer.lock' '**/Gemfile.lock' '**/go.sum' '**/mix.lock'
+
   # OS and system files
-  '**/.DS_Store' '**/Thumbs.db' '**/desktop.ini' '**/*.lnk' '**/System Volume Information/**'
-  '**/lost+found/**' '**/.fseventsd/**' '**/.Spotlight-V100/**' '**/.TemporaryItems/**'
-  
+  '**/.DS_Store' '**/Thumbs.db' '**/desktop.ini' '**/*.lnk' '**/System Volume Information/**' '**/lost+found/**' '**/.fseventsd/**' '**/.Spotlight-V100/**' '**/.TemporaryItems/**'
+
   # Database files
   '**/*.db' '**/*.sqlite' '**/*.sqlite3' '**/*.mdb' '**/*.accdb'
-  
+
   # Archives
   '**/*.zip' '**/*.rar' '**/*.7z' '**/*.tar' '**/*.tar.gz' '**/*.tar.bz2' '**/*.tar.xz' '**/*.gz' '**/*.bz2' '**/*.xz'
-  
+
   # Font files
   '**/*.ttf' '**/*.otf' '**/*.woff' '**/*.woff2' '**/*.eot'
-  
+
   # Virtual environments and containers
-  '**/.venv/**' '**/venv/**' '**/env/**' '**/.virtualenv/**' '**/virtualenv/**'
-  '**/Dockerfile.*' '**/.dockerignore'
-  
+  '**/.venv/**' '**/venv/**' '**/env/**' '**/.virtualenv/**' '**/virtualenv/**' '**/Dockerfile.*' '**/.dockerignore'
+
   # Testing and coverage
   '**/.pytest_cache/**' '**/.coverage' '**/coverage/**' '**/.nyc_output/**' '**/junit.xml'
 )
+
 
 # function to open the selected file
 openFile() {
@@ -80,13 +75,18 @@ else
   SCRIPT_DIR=$(dirname "$(readlink -f "$0" || echo "$0")")
 fi
 
-_zff_selector() {
-  local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s|^~|'"$HOME"'|")'
+fd_excludes=()
+for pat in "${fd_ignores[@]}"; do
+  fd_excludes+=(--exclude "$pat")
+done
 
-  local fd_excludes=()
-  for pat in "${fd_ignores[@]}"; do
-    fd_excludes+=(--exclude "$pat")
-  done
+rg_excludes=()
+for pat in "${fd_ignores[@]}"; do
+  rg_excludes+=("--glob" "!$pat")
+done
+
+_zff_selector() {
+  local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
 
   {
     # Priority 0: (n)vim oldfiles
@@ -107,30 +107,38 @@ _zff_selector() {
        --cycle --preview-window 'right:40%' \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
        --bind="ctrl-d:half-page-up" --bind="ctrl-u:half-page-down" \
-       --query "'" --multi --preview "$previewCmd" |
-     sed 's/^[^ ]* //' | # remove prefix
-     sed "s|^~|$HOME|" # expand tilde
+       --multi --preview "$previewCmd" |
+      sed -e "s/^[^ ]* //;s|^~|$HOME|"
 
 }
 
 get_oldfiles() {
   snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
-  if [[ $HAS_NVIM -eq 1 ]]; then
-  # using both snacks and nvim oldfiles
-  (
-  sqlite3 "$snacks_db" "SELECT key FROM data ORDER BY value DESC;" 2>/dev/null
+    if [[ $useSnacks -eq 1 && -f "$snacks_db" ]]; then
+      # using both snacks and nvim oldfiles
+      (
+      sqlite3 "$snacks_db" "SELECT key FROM data ORDER BY value DESC;" 2>/dev/null
 
-  # fastest way to get nvim oldfiles using --headless
-  nvim -n -u NONE --noplugin --headless \
-    -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
-    -c "qa" 2>&1 | tr -d '\r'
-  ) | awk '!seen[$0]++' | sed "s/^/$oldfilesIcon /"
+      # fastest way to get nvim oldfiles using --headless
+      get_nvim_oldfiles
+      ) | awk '!seen[$0]++' | sed "s/^/$oldfilesIcon /"
+    else
+      get_nvim_oldfiles | sed "s/^/$oldfilesIcon /"
+    fi
+
+}
+
+get_nvim_oldfiles() {
+  (
+    if [[ $HAS_NVIM -eq 1 ]]; then
+    nvim -n -u NONE --noplugin --headless \
+      -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
+      -c "qa" 2>&1 | tr -d '\r' | awk '!seen[$0]++'
   else
     # Fallback to vim oldfiles
-    sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null | \
-    awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
+    sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null
   fi
-
+  ) | rg "${rg_excludes[@]}" --invert-match '^/tmp/.*.(zsh|sh|bash)$'
 }
 
 get_zoxide_files() {
