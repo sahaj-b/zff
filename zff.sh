@@ -6,9 +6,9 @@
 oldfilesIcon=''
 zoxideIcon='󱐌'
 cwdIcon='󰚡'
-zoxideDepth=3 # how deep to search in zoxide dirs
+zoxideDepth=6 # how deep to search in zoxide dirs
 zoxideThreshold=0.5 # minimum score to consider a zoxide dir
-cwdDepth=4 # how deep to search in cwd
+cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
 
@@ -78,7 +78,7 @@ else
 fi
 
 _zff_selector() {
-  local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {3..} | sed "s/^..//" | sed "s|^~|'"$HOME"'|")'
+  local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s|^~|'"$HOME"'|")'
 
   local fd_excludes=()
   for pat in "${fd_ignores[@]}"; do
@@ -90,7 +90,7 @@ _zff_selector() {
     get_oldfiles
 
     # Priority 1: CWD
-    fd -t f -H -d "$cwdDepth" "${fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/1\t0\t$cwdIcon /"
+    fd -t f -H -d "$cwdDepth" "${fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
 
     # Priority 2: Zoxide dirs
     if command -v zoxide &>/dev/null; then
@@ -98,14 +98,12 @@ _zff_selector() {
     fi
 
    } |
-     sed -E "s|^([0-9]+\t[0-9]+\t.[^ ]* )$HOME|\1~|" |
+     sed -E "s|^(.[^ ]* )$HOME|\1~|" |
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
        --cycle --ansi --preview-window 'right:40%' \
-       --delimiter='\t' --with-nth=3.. \
-       --bind="ctrl-c:execute-silent(echo {3..} | sed 's/^..//' | sed 's|^~|$HOME|' | $copyCmd)+abort" \
+       --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
        --query "'" --multi --preview "$previewCmd" |
-     cut -f3- -d$'\t' |
      sed 's/^..//' | # remove prefix
      sed "s|^~|$HOME|" # expand tilde
 
@@ -116,18 +114,18 @@ get_oldfiles() {
   local snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
   if command -v sqlite3 &>/dev/null && [[ -f "$snacks_db" ]]; then
     sqlite3 "$snacks_db" "SELECT key,value FROM data ORDER BY value DESC;" | \
-    awk -v icon="$oldfilesIcon" 'BEGIN{FS="|"} {printf "0\t%d\t%s %s\n", 999999999999-$2, icon, $1}'
+    awk -v icon="$oldfilesIcon" 'BEGIN{FS="|"} {printf "%s %s\n", icon, $1}'
   else
     # fallback to neovim oldfiles
     if command -v nvim >/dev/null 2>&1; then
       nvim --headless -c 'redir! >/dev/stdout | silent oldfiles | quit!' | \
       sed 's/^[ 0-9:]*//' | \
-      awk -v icon="$oldfilesIcon" '{printf "0\t%d\t%s %s\n", NR, icon, $0}'
+      awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
       return 0
     else
       # Fallback to vim oldfiles
       sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null | \
-      awk -v icon="$oldfilesIcon" '{printf "0\t%d\t%s %s\n", NR, icon, $0}'
+      awk -v icon="$oldfilesIcon" '{printf "%s %s\n", icon, $0}'
     fi
   fi
 
@@ -151,7 +149,7 @@ get_zoxide_files() {
     return 0
   fi
   fd -H -d "$zoxideDepth" "${fd_excludes[@]}" . "${filtered_dirs[@]}" 2>/dev/null | \
-    sed "s/^/2\t0\t$zoxideIcon /"
+    sed "s/^/$zoxideIcon /"
 }
 
 
