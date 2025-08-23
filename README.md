@@ -1,15 +1,15 @@
-# `zff` Smart file finder and inserter
+# `zff` - Smart file finder and inserter
 
 `zff` is a bash script that lets you quickly find and open files using fzf, prioritizing vim oldfiles, zoxide directories, and then your current working directory.
 
 > [!NOTE]
-> Only Bash and Zsh shells are supported
+> Only **Bash** and **Zsh** shells are supported
 
 -----
 
 ## Features
 - **Smart Prioritization:** (n)vim oldfiles(with snacks.picker frecency support) > CWD > zoxide dirs
-- **Speed:** Uses `fd` with `fzf` for insane speed
+- **Speed:** Uses `fd` and `rg` with `fzf` for insane speed
 - **Preview support:** Preview code with `bat`, and get thumbnails for images and videos.
 - **Inserter function:** use `zffi` to insert the path(s) into your current command
 - **Customizable**: Extensive config options for icons, depths, ignores, score thresholds and more
@@ -18,9 +18,9 @@
 
 ## Requirements
   - `fzf`
-  - `zoxide` (optional)
   - `fd`
   - `rg`
+  - `zoxide` (optional): For zoxide directories support
   - `bat` (optional): For syntax-highlighted code previews.
   - `ffmpegthumbnailer` (optional): For video thumbnails in the preview pane.
   - `chafa` or `img2sixel` (optional): For image previews in the terminal.(`chafa` is recommended as it supports more formats)
@@ -33,20 +33,20 @@ git clone https://github.com/sahaj-b/zff.git
 ```
 Add the `source` command to your shell's config file (`.bashrc` or `.zshrc`)
 ```sh
-# in ~/.bashrc or ~/.zshrc
+# assuming you cloned zff to ~/zff
 if [[ -f ~/zff/zff.sh ]]; then
   source ~/zff/zff.sh
 fi
 ```
 -----
 
-## Usage
+## Usage and Setup
 
 ### To Open a File
 
-Simply run the `zff`.
-
-The selected file will open in your `$EDITOR` (`nvim` by default) or `xdg-open` if it's not a text file.
+Simply run the `zff`.  
+The selected file will open in your `$EDITOR` (`nvim` by default) or `xdg-open` if it's not a text file.  
+You can bind it to a keybind if you want. (see Zsh widget example below)
 
 ### To Insert a File Path
 
@@ -58,10 +58,23 @@ The script provides a function called `zffi`.
      bindkey '^T' zffi # Ctrl + T
      ```
 
-### Custom Zsh Widget Example
-For more advanced integration, you can create a custom widget.
+### Opener Zsh Widget
+You can also create a widget to run `zff` on a keybind.
+- For `zsh`
+  ```zsh
+  zff-widget() {
+    zff
+    zle reset-prompt
+  }
+  bindkey '^O' zff # Ctrl + O
+  ```
+- For `bash
+  ```bash
+  bind '"\C-o":"zff\n"'
+  ```
 
-This one opens files (`zff`) when the prompt is empty and inserts paths(`zffi`) when typing when you press `Ctrl + o`:
+### Next-level Zsh Widget Example
+When you press `Ctrl + o`, this one opens files (`zff`) when the prompt is empty, and inserts paths (`zffi`) if its not 
 ```zsh
 zff-widget() {
   if [[ -n "$BUFFER" ]]; then
@@ -76,11 +89,15 @@ zff-widget() {
 zle -N zff-widget
 bindkey '^o' zff-widget # Ctrl + o
 ```
+> [!TIP]
+> - `Ctrl + c` to copy selected path to clipboard (change your copy command in config if needed)
+> - `Ctrl + u/Ctrl + d` to go half page up/down in the list
+> - You can change these behavior by editing the fzf command in main file
 
 -----
 
 ## Configuration
 
-Create a file at `XDG_CONFIG_HOME/zff/config.sh` (`~/.config/zff/config.sh`) to customize your `zff` experience.
-
-See [example_config.sh](example_config.sh) for all available options with defaults
+- Create a file at `XDG_CONFIG_HOME/zff/config.sh` (`~/.config/zff/config.sh`) to customize your `zff` experience.
+- This script supports a wide range of configuration options, from setting custom icons to defining search depths and ignore patterns.
+- See [example_config.sh](example_config.sh) for all available options with defaults

@@ -11,11 +11,12 @@ cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
 useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
+oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
 
 # ignore patterns
 fd_ignores=(
   # VCS, project folders, misc
-  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**"
+  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**" "oil:*"
 
   # Build artifacts and temp files
   '**/CMakeCache.txt' '**/CMakeFiles/**' '**/Makefile' '**/*.o' '**/*.obj' '**/*.a' '**/*.so' '**/*.dll' '**/*.dylib' '**/*.exe' '**/*.class' '**/*.jar' '**/*.war' '**/*.pyc' '**/*.pyo' '**/*.pyd' '**/__pycache__/**' '**/*.whl' '**/coverage/**' '**/.coverage' '**/.nyc_output/**' '**/htmlcov/**' '**/coverage.xml'
@@ -80,11 +81,6 @@ for pat in "${fd_ignores[@]}"; do
   fd_excludes+=(--exclude "$pat")
 done
 
-rg_excludes=()
-for pat in "${fd_ignores[@]}"; do
-  rg_excludes+=("--glob" "!$pat")
-done
-
 _zff_selector() {
   local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
 
@@ -138,7 +134,7 @@ get_nvim_oldfiles() {
     # Fallback to vim oldfiles
     sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null
   fi
-  ) | rg "${rg_excludes[@]}" --invert-match '^/tmp/.*.(zsh|sh|bash)$'
+  ) | rg --invert-match $oldfilesIgnore
 }
 
 get_zoxide_files() {

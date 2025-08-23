@@ -11,7 +11,9 @@ useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
 
 bashInsertKey='\C-t' # keybind for inserter in bash (use widget instead in zsh)
 
-# ignore patterns (see zff.sh for defaults)
+oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
+
+# ignore patterns for zoxide and CWD (see zff.sh for defaults)
 fd_ignores+=('**/my_ignore_folder/**' '**/*.log') # adds to defaults
 # use '=' instead of '+=' to override defaults
 
