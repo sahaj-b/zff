@@ -1,4 +1,4 @@
-# `zff` Snart file finder and inserter
+# `zff` Smart file finder and inserter
 
 `zff` is a bash script that lets you quickly find and open files using fzf, prioritizing vim oldfiles, zoxide directories, and then your current working directory.
 

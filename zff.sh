@@ -104,9 +104,9 @@ _zff_selector() {
      sed -E "s|^(.[^ ]* )$HOME|\1~|" |
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
-       --cycle --preview-window 'right:40%' \
+       --cycle --preview-window "$(if [[ $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
-       --bind="ctrl-d:half-page-up" --bind="ctrl-u:half-page-down" \
+       --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
        --multi --preview "$previewCmd" |
       sed -e "s/^[^ ]* //;s|^~|$HOME|"
 
