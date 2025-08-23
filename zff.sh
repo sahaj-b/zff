@@ -10,8 +10,9 @@ zoxideThreshold=0.4 # minimum score to consider a zoxide dir
 cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
-useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
+useSnacks=false # use snacks.nvim frecency ordering for oldfiles
 oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
+enablePreview=true # enable preview in fzf
 
 # ignore patterns
 fd_ignores=(
@@ -81,9 +82,15 @@ for pat in "${fd_ignores[@]}"; do
   fd_excludes+=(--exclude "$pat")
 done
 
-_zff_selector() {
-  local previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
+previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
 
+if [[ $enablePreview ]]; then
+  previewFlag=()
+else
+  previewFlag=(--preview "$previewCmd")
+fi
+
+_zff_selector() {
   {
     # Priority 0: (n)vim oldfiles
     get_oldfiles
@@ -100,17 +107,17 @@ _zff_selector() {
      sed -E "s|^(.[^ ]* )$HOME|\1~|" |
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
-       --cycle --preview-window "$(if [[ $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
+       --cycle --preview-window "$(if [[ $enablePreview && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
        --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
-       --multi --preview "$previewCmd" |
+       --multi "${previewFlag[@]}" |
       sed -e "s/^[^ ]* //;s|^~|$HOME|"
 
 }
 
 get_oldfiles() {
   snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
-    if [[ $useSnacks -eq 1 && -f "$snacks_db" ]]; then
+    if [[ $useSnacks && -f "$snacks_db" ]]; then
       # using both snacks and nvim oldfiles
       (
       sqlite3 "$snacks_db" "SELECT key FROM data ORDER BY value DESC;" 2>/dev/null

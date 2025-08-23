@@ -74,7 +74,7 @@ You can also create a widget to run `zff` on a keybind.
   ```
 
 ### Next-level Zsh Widget Example
-When you press `Ctrl + o`, this one opens files (`zff`) when the prompt is empty, and inserts paths (`zffi`) if its not 
+When you press `Ctrl + space`, this one opens files (`zff`) when the prompt is empty, and inserts paths (`zffi`) if its not 
 ```zsh
 zff-widget() {
   if [[ -n "$BUFFER" ]]; then
@@ -87,12 +87,14 @@ zff-widget() {
   fi
 }
 zle -N zff-widget
-bindkey '^o' zff-widget # Ctrl + o
+bindkey '^@' zff-widget # Ctrl + space
 ```
+
 > [!TIP]
 > - `Ctrl + c` to copy selected path to clipboard (change your copy command in config if needed)
-> - `Ctrl + u/Ctrl + d` to go half page up/down in the list
+> - `Ctrl + u` / `Ctrl + d` to go half page up/down in the list
 > - You can change these behavior by editing the fzf command in main file
+> - Use `tab` / `shift + tab` to select/unselect multiple files to insert
 
 -----
 
@@ -101,3 +103,9 @@ bindkey '^o' zff-widget # Ctrl + o
 - Create a file at `XDG_CONFIG_HOME/zff/config.sh` (`~/.config/zff/config.sh`) to customize your `zff` experience.
 - This script supports a wide range of configuration options, from setting custom icons to defining search depths and ignore patterns.
 - See [example_config.sh](example_config.sh) for all available options with defaults
+
+## Lagging?
+Low end systems *may* experience some lag due to large number of files. You can
+- Reduce search depths (recommended) and score threshold
+- Add more ignore patterns in the config file to improve performance.
+- Disable preview in config
