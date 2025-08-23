@@ -10,20 +10,20 @@
 ## Features
 - **Smart Prioritization:** (n)vim oldfiles(with snacks.picker frecency support) > CWD > zoxide dirs
 - **Speed:** Uses `fd` and `rg` with `fzf` for insane speed
-- **Preview support:** Preview code with `bat`, and get thumbnails for images and videos.
+- **Preview support:** Supports thumbnails for images and videos.
 - **Inserter function:** use `zffi` to insert the path(s) into your current command
 - **Customizable**: Extensive config options for icons, depths, ignores, score thresholds and more
 
 -----
 
 ## Requirements
-  - `fzf`
-  - `fd`
-  - `rg`
-  - `zoxide` (optional): For zoxide directories support
-  - `bat` (optional): For syntax-highlighted code previews.
-  - `ffmpegthumbnailer` (optional): For video thumbnails in the preview pane.
-  - `chafa` or `img2sixel` (optional): For image previews in the terminal.(`chafa` is recommended as it supports more formats)
+  - `fzf`: For interactive fuzzy finding and UI
+  - `fd`: For file searching (Zoxide and CWD)
+  - `rg`: For filtering oldfiles
+  - `zoxide` **(optional)**: For zoxide directories support
+  - `bat` **(optional)**: For syntax-highlighted code previews.
+  - `ffmpegthumbnailer` **(optional)**: For video thumbnails in the preview pane.
+  - `chafa` or `img2sixel` **(optional)**: For image previews in the terminal.(`chafa` is recommended as it supports more formats)
 
 -----
 
@@ -43,13 +43,11 @@ fi
 ## Usage and Setup
 
 ### To Open a File
-
-Simply run the `zff`.  
+Just run `zff`
 The selected file will open in your `$EDITOR` (`nvim` by default) or `xdg-open` if it's not a text file.  
 You can bind it to a keybind if you want. (see Zsh widget example below)
 
 ### To Insert a File Path
-
 The script provides a function called `zffi`.
   * **Bash:** A keybind is set up for you by default. Just hit **`Ctrl+T`**. Change keybind in Config if you want
   * **Zsh:** You need to bind the `zffi` widget yourself. Add this to your `.zshrc` to map it to `Ctrl+T`:

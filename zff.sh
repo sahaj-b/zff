@@ -10,9 +10,9 @@ zoxideThreshold=0.4 # minimum score to consider a zoxide dir
 cwdDepth=8 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
-useSnacks=false # use snacks.nvim frecency ordering for oldfiles
+useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
 oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
-enablePreview=true # enable preview in fzf
+enablePreview=1 # enable preview in fzf
 
 # ignore patterns
 fd_ignores=(
@@ -47,7 +47,7 @@ fd_ignores=(
 
 # function to open the selected file
 openFile() {
-  if file --mime-type -b "$1" | grep -E -q 'text/|application/(json|javascript|xml|csv|x-yaml)';then
+  if file --mime-type -b "$1" | grep -E -q 'text/|application/(json|javascript|xml|csv|x-yaml)|inode/x-empty';then
     ${EDITOR:-nvim} "$1"
   else
     xdg-open "$1" &>/dev/null &
@@ -84,10 +84,10 @@ done
 
 previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
 
-if [[ $enablePreview ]]; then
-  previewFlag=()
-else
+if [[ $enablePreview -eq 1 ]]; then
   previewFlag=(--preview "$previewCmd")
+else
+  previewFlag=()
 fi
 
 _zff_selector() {
@@ -107,7 +107,7 @@ _zff_selector() {
      sed -E "s|^(.[^ ]* )$HOME|\1~|" |
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
-       --cycle --preview-window "$(if [[ $enablePreview && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
+       --cycle --preview-window "$(if [[ $enablePreview -eq 1 && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
        --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
        --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
        --multi "${previewFlag[@]}" |

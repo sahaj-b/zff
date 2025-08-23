@@ -8,8 +8,9 @@ zoxideThreshold=0.4 # minimum score to consider a zoxide dir
 cwdDepth=8          # how deep to search in cwd
 copyCmd='pbcopy'    # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 
-useSnacks=false    # use snacks.nvim frecency ordering for oldfiles
-enablePreview=true # enable preview in fzf
+# 0 = no, 1 = yes
+useSnacks=0     # use snacks.nvim frecency ordering for oldfiles
+enablePreview=1 # enable preview in fzf
 
 bashInsertKey='\C-t' # keybind for inserter in bash (in zsh, use widget instead)
 
@@ -21,7 +22,7 @@ fd_ignores+=('**/my_ignore_folder/**' '**/*.log') # adds to defaults
 
 # function to open the selected file
 openFile() {
-  if file --mime-type -b "$1" | grep -E -q 'text/|application/(json|javascript|xml|csv|x-yaml)'; then
+  if file --mime-type -b "$1" | grep -E -q 'text/|application/(json|javascript|xml|csv|x-yaml)|inode/x-empty'; then
     ${EDITOR:-nvim} "$1"
   else
     xdg-open "$1" &>/dev/null &
