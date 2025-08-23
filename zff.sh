@@ -5,9 +5,9 @@
 oldfilesIcon=''
 zoxideIcon='󱐌'
 cwdIcon='󰚡'
-zoxideDepth=6 # how deep to search in zoxide dirs
+zoxideDepth=3 # how deep to search in zoxide dirs
 zoxideThreshold=0.4 # minimum score to consider a zoxide dir
-cwdDepth=8 # how deep to search in cwd
+cwdDepth=6 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
 useSnacks=0 # use snacks.nvim frecency ordering for oldfiles

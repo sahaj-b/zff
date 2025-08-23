@@ -3,10 +3,10 @@ zoxideIcon='󱐌'
 cwdIcon='󰚡'
 
 # you can set the depths to zero to disable a source
-zoxideDepth=6       # how deep to search in zoxide dirs
+zoxideDepth=3       # how deep to search in zoxide dirs
 zoxideThreshold=0.4 # minimum score to consider a zoxide dir
-cwdDepth=8          # how deep to search in cwd
-copyCmd='pbcopy'    # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
+cwdDepth=6          # how deep to search in cwd
+copyCmd='wl-copy'   # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 
 # 0 = no, 1 = yes
 useSnacks=0     # use snacks.nvim frecency ordering for oldfiles
