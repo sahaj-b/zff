@@ -82,7 +82,7 @@ for pat in "${fd_ignores[@]}"; do
   fd_excludes+=(--exclude "$pat")
 done
 
-previewCmd="$SCRIPT_DIR/zff-preview.sh "'$(echo {} | sed "s/^[^ ]* //;s|^~|'"$HOME"'|")'""
+previewCmd="$SCRIPT_DIR/zff-preview.sh {}"
 
 if [[ $enablePreview -eq 1 ]]; then
   previewFlag=(--preview "$previewCmd")
@@ -160,8 +160,8 @@ get_zoxide_files() {
   if [[ ${#filtered_dirs[@]} -eq 0 ]]; then
     return 0
   fi
-  fd -H -d "$zoxideDepth" "${fd_excludes[@]}" . "${filtered_dirs[@]}" 2>/dev/null | \
-    sed "s/^/$zoxideIcon /"
+  fd -H -d "$zoxideDepth" "${fd_excludes[@]}" . "${filtered_dirs[@]}" 2>/dev/null |
+    awk '!seen[$0]++' | sed "s/^/$zoxideIcon /"
 }
 
 # main function (opener)

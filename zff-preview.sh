@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-path="$1"
+printf '\033[2J\033[H'
+path="$(echo "$1" | sed 's/^[^ ]* //;s|^~|'"$HOME"'|')"
 
 if [[ ! -f "$path" ]]; then
   echo "File not found: $path"
