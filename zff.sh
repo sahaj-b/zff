@@ -108,7 +108,7 @@ _zff_selector() {
      fzf --height 50% --layout reverse --info=inline \
        --scheme=path --tiebreak=index \
        --cycle --preview-window "$(if [[ $enablePreview -eq 1 && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
-       --bind="ctrl-c:execute-silent(echo {} | sed 's|^~|$HOME|' | $copyCmd)+abort" \
+       --bind="ctrl-c:execute-silent(echo {} | sed -e 's/^[^ ]* //' | tr -d '\n' | $copyCmd)+abort" \
        --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
        --multi "${previewFlag[@]}" |
       sed -e "s/^[^ ]* //;s|^~|$HOME|"
