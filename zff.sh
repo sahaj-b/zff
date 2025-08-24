@@ -117,7 +117,7 @@ _zff_selector() {
 
 get_oldfiles() {
   snacks_db="$HOME/.local/share/nvim/snacks/picker-frecency.sqlite3"
-    if [[ $useSnacks && -f "$snacks_db" ]]; then
+    if [[ $useSnacks -eq 1 && -f "$snacks_db" ]]; then
       # using both snacks and nvim oldfiles
       (
       sqlite3 "$snacks_db" "SELECT key FROM data ORDER BY value DESC;" 2>/dev/null
@@ -136,7 +136,7 @@ get_nvim_oldfiles() {
     if [[ $HAS_NVIM -eq 1 ]]; then
     nvim -n -u NONE --noplugin --headless \
       -c "lua for _,f in ipairs(vim.v.oldfiles) do print(f) end" \
-      -c "qa" 2>&1 | tr -d '\r' | awk '!seen[$0]++'
+      -c "qa" 2>&1 | tr -d '\r'
   else
     # Fallback to vim oldfiles
     sed -n 's/^> //p' "$HOME/.viminfo" 2>/dev/null
