@@ -1,5 +1,11 @@
 # `zff` - Smart file finder and inserter
 
+<div align="center">
+  <img src="demo.gif" alt="zff demo gif"/>
+</div>
+
+---
+
 `zff` is a bash script that lets you quickly find and open files using fzf, prioritizing vim oldfiles, zoxide directories, and then your current working directory.
 
 > [!NOTE]
