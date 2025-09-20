@@ -17,7 +17,7 @@ bashInsertKey='\C-t' # keybind for inserter in bash (in zsh, use widget instead)
 oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
 
 # ignore patterns for zoxide and CWD (see zff.sh for defaults)
-fd_ignores+=('**/my_ignore_folder/**' '**/*.log') # adds to defaults
+zff_fd_ignores+=('**/my_ignore_folder/**' '**/*.log') # adds to defaults
 # use '=' instead of '+=' to override defaults
 
 # function to open the selected file

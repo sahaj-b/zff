@@ -15,7 +15,7 @@ oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfil
 enablePreview=1 # enable preview in fzf
 
 # ignore patterns
-fd_ignores=(
+zff_fd_ignores=(
   # VCS, project folders, misc
   '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**" "oil:*"
 
@@ -77,10 +77,12 @@ else
   SCRIPT_DIR=$(dirname "$(readlink -f "$0" || echo "$0")")
 fi
 
-fd_excludes=()
-for pat in "${fd_ignores[@]}"; do
-  fd_excludes+=(--exclude "$pat")
+zff_fd_excludes=()
+for pat in "${zff_fd_ignores[@]}"; do
+  zff_fd_excludes+=(--exclude "$pat")
 done
+
+printf -- "- %s\n" "${zff_fd_excludes[@]}" >> /tmp/zff_array_debug.log
 
 previewCmd="$SCRIPT_DIR/zff-preview.sh {}"
 
@@ -96,7 +98,7 @@ _zff_selector() {
     get_oldfiles
 
     # Priority 1: CWD
-    fd -t f -H -d "$cwdDepth" "${fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
+    fd -t f -H -d "$cwdDepth" "${zff_fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
 
     # Priority 2: Zoxide dirs
     if [[ $HAS_ZOXIDE -eq 1 ]]; then
@@ -160,7 +162,7 @@ get_zoxide_files() {
   if [[ ${#filtered_dirs[@]} -eq 0 ]]; then
     return 0
   fi
-  fd -H -d "$zoxideDepth" "${fd_excludes[@]}" . "${filtered_dirs[@]}" 2>/dev/null |
+  fd -H -d "$zoxideDepth" "${zff_fd_excludes[@]}" . "${filtered_dirs[@]}" 2>/dev/null |
     awk '!seen[$0]++' | sed "s/^/$zoxideIcon /"
 }
 
