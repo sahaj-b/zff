@@ -9,8 +9,9 @@ cwdDepth=6          # how deep to search in cwd
 copyCmd='wl-copy'   # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 
 # 0 = no, 1 = yes
-useSnacks=0     # use snacks.nvim frecency ordering for oldfiles
-enablePreview=1 # enable preview in fzf
+useSnacks=0        # use snacks.nvim frecency ordering for oldfiles
+enablePreview=1    # enable preview in fzf
+respectGitIgnore=1 # respect .gitignore and .fdignore files when searching in cwd
 
 bashInsertKey='\C-t' # keybind for inserter in bash (in zsh, use widget instead)
 

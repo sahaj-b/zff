@@ -11,13 +11,14 @@ cwdDepth=6 # how deep to search in cwd
 copyCmd='wl-copy' # command to copy to clipboard (eg: wl-copy,pbcopy,xclip,xsel)
 bashInsertKey='\C-t' # keybind for inserter in bash
 useSnacks=0 # use snacks.nvim frecency ordering for oldfiles
-oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*' # regex to ignore certain oldfiles
+oldfilesIgnore='^/tmp/.*.(zsh|sh|bash)$|^oil.*|^/var/tmp/.*' # regex to ignore certain oldfiles
 enablePreview=1 # enable preview in fzf
+respectGitIgnore=1 # respect .gitignore files when searching in cwd
 
 # ignore patterns
 zff_fd_ignores=(
   # VCS, project folders, misc
-  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**" "oil:*"
+  '**/.git/**' '**/node_modules/**' '**/.cache/**' '**/.venv/**' '**/.vscode/**' '**/.pycache__/**' '**/.DS_Store' '**/.idea/**' '**/.mypy_cache/**' '**/.pytest_cache/**' '**/.next/**' '**/dist/**' '**/build/**' '**/target/**' '**/.gradle/**' '**/.terraform/**' '**/.egg-info/**' '**/.env' '**/.history' '**/.svn/**' '**/.hg/**' '**/.Trash/**' '**/bin/**' '**/.bin/**' "**/.local/share/Trash/**" "**/.local/share/nvim/**" "**/pkg/**" "oil:*" "**/.vim/undodir/**" "**/.local/state/nvim/undo/**"
 
   # Build artifacts and temp files
   '**/CMakeCache.txt' '**/CMakeFiles/**' '**/Makefile' '**/*.o' '**/*.obj' '**/*.a' '**/*.so' '**/*.dll' '**/*.dylib' '**/*.exe' '**/*.class' '**/*.jar' '**/*.war' '**/*.pyc' '**/*.pyo' '**/*.pyd' '**/__pycache__/**' '**/*.whl' '**/coverage/**' '**/.coverage' '**/.nyc_output/**' '**/htmlcov/**' '**/coverage.xml'
@@ -92,13 +93,18 @@ else
   previewFlag=()
 fi
 
+zff_ignore_flag=""
+if [[ $respectGitIgnore -eq 0 ]]; then
+  zff_ignore_flag="--no-ignore"
+fi
+
 _zff_selector() {
   {
     # Priority 0: (n)vim oldfiles
     get_oldfiles
 
     # Priority 1: CWD
-    fd -t f -H -d "$cwdDepth" "${zff_fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
+    fd -t f -H -d "$cwdDepth" $zff_ignore_flag "${zff_fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
 
     # Priority 2: Zoxide dirs
     if [[ $HAS_ZOXIDE -eq 1 ]]; then
