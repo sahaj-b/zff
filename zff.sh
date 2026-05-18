@@ -99,28 +99,48 @@ if [[ $respectGitIgnore -eq 0 ]]; then
 fi
 
 _zff_selector() {
-  {
-    # Priority 0: (n)vim oldfiles
-    get_oldfiles
+  local fifo="${TMPDIR:-/tmp}/zff-fifo-$$"
+  rm -f "$fifo"
+  mkfifo "$fifo"
 
-    # Priority 1: CWD
-    fd -t f -H -d "$cwdDepth" $zff_ignore_flag "${zff_fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
+  _zff_generate() {
+    {
+      # Priority 0: (n)vim oldfiles
+      get_oldfiles
 
-    # Priority 2: Zoxide dirs
-    if [[ $HAS_ZOXIDE -eq 1 ]]; then
-      get_zoxide_files
-    fi
+      # Priority 1: CWD
+      fd -t f -H -d "$cwdDepth" $zff_ignore_flag "${zff_fd_excludes[@]}" . "$PWD" 2>/dev/null | sed "s/^/$cwdIcon /"
 
-   } |
-     sed -E "s|^(.[^ ]* )$HOME|\1~|" |
-     fzf --height 50% --layout reverse --info=inline \
-       --scheme=path --tiebreak=index \
-       --cycle --preview-window "$(if [[ $enablePreview -eq 1 && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
-       --bind="ctrl-c:execute-silent(echo {} | sed -e 's/^[^ ]* //' | tr -d '\n' | $copyCmd)+abort" \
-       --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
-       --multi "${previewFlag[@]}" |
-      sed -e "s/^[^ ]* //;s|^~|$HOME|"
+      # Priority 2: Zoxide dirs
+      if [[ $HAS_ZOXIDE -eq 1 ]]; then
+        get_zoxide_files
+      fi
 
+     } | sed -E "s|^(.[^ ]* )$HOME|\1~|"
+  }
+
+  _zff_generate > "$fifo" 2>/dev/null &
+  local gen_pid=$!
+
+  local result
+  result=$(fzf --height 50% --layout reverse --info=inline \
+    --scheme=path --tiebreak=index \
+    --cycle --preview-window "$(if [[ $enablePreview -eq 1 && $(tput cols) -lt 120 ]]; then echo 'down:40%'; else echo 'right:40%'; fi)" \
+    --bind="ctrl-c:execute-silent(echo {} | sed -e 's/^[^ ]* //' | tr -d '\n' | $copyCmd)+abort" \
+    --bind="ctrl-d:half-page-down,ctrl-u:half-page-up" \
+    --multi "${previewFlag[@]}" < "$fifo" | \
+    sed -e "s/^[^ ]* //;s|^~|$HOME|")
+
+  # Clear any lingering KGP images left by the preview pane
+  [[ $enablePreview -eq 1 ]] && printf '\033_Ga=d,d=A\033\\' > /dev/tty 2>/dev/null
+
+  # FIFO lets fzf stream data while generator runs in bg.
+  # Kill it on fzf exit so zsh doesn't block waiting for the full pipeline to drain.
+  kill "$gen_pid" 2>/dev/null
+  wait "$gen_pid" 2>/dev/null
+  rm -f "$fifo"
+
+  [[ -n "$result" ]] && printf '%s\n' "$result"
 }
 
 get_oldfiles() {

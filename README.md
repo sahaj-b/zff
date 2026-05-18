@@ -17,7 +17,7 @@
 - **Smart Prioritization:** (n)vim oldfiles(with snacks.picker frecency support) > CWD > zoxide dirs
 - **Speed:** Uses `fd` and `rg` with `fzf` for insane speed
 - **Preview support:** Supports thumbnails for images and videos.
-- **Inserter function:** use `zffi` to insert the path(s) into your current command
+- **Inserter function:** uses a bash/zsh widget to insert the path(s) into your current command
 - **Customizable**: Extensive config options for icons, depths, ignores, score thresholds and more
 
 -----
@@ -29,7 +29,8 @@
   - `zoxide` **(optional)**: For zoxide directories support
   - `bat` **(optional)**: For syntax-highlighted code previews.
   - `ffmpegthumbnailer` **(optional)**: For video thumbnails in the preview pane.
-  - `chafa` or `img2sixel` **(optional)**: For image previews in the terminal.(`chafa` is recommended as it supports more formats)
+  - `chafa` or `img2sixel` **(optional)**: For image previews in the terminal.(`chafa` is recommended as it supports more formats) 
+  - *Note: images previews are builtin for KGP supported terminals (Kitty, Ghostty, Wezterm) and don't require any dependency*
 
 -----
 
